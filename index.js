@@ -6,6 +6,8 @@ const { DBManager } = require("./dbManager")
 const { EmbedBuilder } = require("@discordjs/builders")
 const dbManager = new DBManager()
 
+const path = require("path")
+
 const {
     Worker, isMainThread, parentPort, workerData,
 } = require('node:worker_threads');
@@ -22,7 +24,7 @@ client.on("ready", () => {
     console.log("fuck you, i'm on")
 })
 
-const worker = new Worker(__filename.split("\\").slice(0, -1).join("\\")+"\\"+"worker.js");
+const worker = new Worker(path.resolve(__dirname, "worker.js"));
 
 worker.on("message", (data) => {
     console.log(data)
@@ -111,4 +113,4 @@ function mudaeMessageHandler(message) {
     }
 }
 
-client.login(process.env.token)
+client.login(process.env.BOT_TOKEN)

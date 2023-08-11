@@ -17,8 +17,6 @@ const isClaimReset = () => {
     return (Math.floor(Date.now() / hourMs) + 1) % 3 == 0
 }
 
-console.log(Math.floor(Date.now() / hourMs))
-
 console.log(`Waiting ${msTillNextRollReset()}ms`)
 
 setTimeout(() => {
