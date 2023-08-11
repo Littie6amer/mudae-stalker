@@ -111,4 +111,4 @@ function mudaeMessageHandler(message) {
     }
 }
 
-client.login("MTEzOTE2NzAwMDcxMTY1OTU5MA.GhYBV4.HAOZKoe3IFGNvlM5o2j7i1hIN8L8jvvvvSu8KE")
+client.login(process.env.token)
