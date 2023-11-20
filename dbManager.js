@@ -5,6 +5,10 @@ module.exports.DBManager = class DBManager {
         this.init_fin = false
         this.db = new QuickDB()
         this.subs = {}
+        this.claimReset = {
+            lastMessage: null,
+            users: []
+        }
         this.init()
     }
 
@@ -12,10 +16,19 @@ module.exports.DBManager = class DBManager {
         let subs = await this.db.get("subs")
         if (subs == null) subs = await this.db.set("subs", {})
         this.subs = subs
+        let claimReset = await this.db.get("claimReset")
+        if (claimReset != null) this.claimReset = claimReset
         this.init_fin = true
     }
 
     async reset () {
+        this.active = []
+        await this.db.set("active", [])
+        this.subs = {}
+        return await this.db.set("subs", {})
+    }
+
+    async resetSubscriptions () {
         this.subs = {}
         return await this.db.set("subs", {})
     }
@@ -52,5 +65,36 @@ module.exports.DBManager = class DBManager {
     listSubscribers (series) {
         if (!this.init_fin) return null
         return this.subs[series]
+    }
+
+    addActive (userId) {
+        if (!this.init_fin) return null
+
+        this.claimReset.users.push(userId)
+        this.db.set("claimReset", this.claimReset)
+
+        return this.claimReset
+    }
+
+    async resetActive () {
+        this.claimReset.users = []
+        return await this.db.set("claimReset", this.claimReset)
+    }
+    
+    async resetClaimReset () {
+        this.claimReset = {
+            users: [],
+            lastMessage: null
+        }
+        return await this.db.set("claimReset", this.claimReset)
+    }
+
+    get claimResetMessage () {
+        return this.claimReset.lastMessage
+    }
+
+    set claimResetMessage (messageId) {
+        this.claimResetMessage = messageId
+        this.db.set("claimReset")
     }
 }

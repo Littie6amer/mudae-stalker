@@ -17,6 +17,7 @@ const client = new Client({
         GatewayIntentBits.GuildMessages,
         GatewayIntentBits.MessageContent,
         GatewayIntentBits.Guilds,
+        GatewayIntentBits.GuildMembers
     ]
 })
 
@@ -31,11 +32,30 @@ worker.on("message", (data) => {
 
     if (data.message == "rolls-reset") {
         let content = "**Rolls have reset!**"
-        if (data.claimReset) content+="\n**Claims have reset!**"
-        content+="<@&1139223739897237564>"
+        if (data.claimReset) content += "\n**Claims have reset!**"
+        content += " <@&1139223739897237564>"
 
-        if (client.readyAt) return client.channels.cache.get("1127649722845376712").send({ content })
-        else client.once("ready", () => client.channels.cache.get("1127649722845376712").send({ content }))
+        const rollResetRun = async () => {
+            const guild = client.guilds.cache.get("1123334541063503902")
+            const channel = guild.channels.cache.get("1127649722845376712")
+            if (!dbManager.claimReset.users.length) {
+                if (data.claimReset && dbManager.claimResetMessage != null) {
+                    await channel.messages.fetch(dbManager.claimResetMessage).then(m => {
+                        m.edit(content)
+                        dbManager.claimResetMessage = null
+                    }).catch()
+                }
+                return;
+            }
+            await channel.send({ content })
+            let members = guild.members.cache
+            if (members.size < guild.memberCount) members = await guild.members.fetch({ force: true }).catch(() => null)
+            if (members != null) guild.members.cache.forEach(m => m.roles.cache.has("1139223739897237564") && m.roles.remove("1139223739897237564"))
+            dbManager.resetActive()
+        }
+
+        if (client.readyAt) return rollResetRun()
+        else client.once("ready", rollResetRun)
     }
 })
 
@@ -63,6 +83,12 @@ client.on("messageCreate", async (message) => {
 
     if (command == "$ls" && message.author.id == "402888568579686401") {
         return message.reply({ content: `\`\`\`${JSON.stringify(dbManager.subs, null, 4)}\`\`\`` })
+    }
+
+    if (command != "help" && (command.startsWith("h") || command.startWith("w")) && !dbManager.claimReset.users.includes(message.author.id)) {
+        dbManager.addActive(message.author.id)
+        message.member.roles.add("1139223739897237564").catch()
+        message.react("⏱️")
     }
 
     if (command == "ss") {
@@ -108,7 +134,7 @@ function mudaeMessageHandler(message) {
             const subs = dbManager.listSubscribers(series)
             if (subs != false && subs?.length)
                 message.reply({ content: `A character from **${series}** just appeared!\n${subs.map(s => `<@${s}>`)}` })
-            setTimeout(() => message.react("⛔"), 45*1000)
+            setTimeout(() => message.react("⛔"), 45 * 1000)
         }
     }
 }

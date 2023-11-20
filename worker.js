@@ -9,8 +9,9 @@ const msTillNextRollReset = () => {
     const currentHourMs = Math.floor(Date.now() / hourMs) * hourMs
     const currentMin = Math.floor((Date.now() - currentHourMs) / minMs)
 
-    if (currentMin > 35) return (currentHourMs + hourMs + (minMs * 35)) - Date.now()
-    else return (currentHourMs + (minMs * 35)) - Date.now()
+    const ofset = 35
+    if (currentMin > ofset) return (currentHourMs + hourMs + (minMs * ofset)) - Date.now()
+    else return (currentHourMs + (minMs * ofset)) - Date.now()
 }
 
 const isClaimReset = () => {
