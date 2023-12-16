@@ -76,6 +76,8 @@ client.on("messageCreate", async (message) => {
     let args = message.content.slice(prefix.length).split(" ")
     const command = args.shift()
 
+    if (!command) return; 
+
     if (command == "$rs" && message.author.id == "402888568579686401") {
         await dbManager.reset()
         return message.reply({ content: "Subscription data wiped." })
