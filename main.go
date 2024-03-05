@@ -19,7 +19,6 @@ func main() {
 	if err := env.Load("./.env"); err != nil {
 		panic(err)
 	}
-
 	botToken, err := env.MustGet("BOT_TOKEN")
 	if err != nil {
 		panic(err)
@@ -42,7 +41,7 @@ func main() {
 
 	println("Ready! Logged in as", client.State.User.Username)
 
-	//go timers(client)
+	go timers(client)
 	_ = client.UpdateWatchStatus(0, "👀")
 
 	sc := make(chan os.Signal, 1)
@@ -50,29 +49,6 @@ func main() {
 	<-sc
 
 	_ = client.Close()
-}
-
-func timers(client *discordgo.Session) {
-	i := 0
-	waitUntilNextMinute()
-	fmt.Println("Starting loop.")
-	for {
-		i++
-		msg := fmt.Sprintf("again x%d\n", i)
-		_, err := client.ChannelMessageSend("1023170512895103036", msg)
-		if err != nil {
-			fmt.Println(err)
-		}
-		waitUntilNextMinute()
-	}
-}
-
-func waitUntilNextMinute() {
-	waitSecs := 60 - time.Now().Second()
-	fmt.Printf("Waiting %d seconds\n", waitSecs)
-	if waitSecs > 0 {
-		time.Sleep(time.Duration(waitSecs) * time.Second)
-	}
 }
 
 func messageCreate(client *discordgo.Session, message *discordgo.MessageCreate) {
